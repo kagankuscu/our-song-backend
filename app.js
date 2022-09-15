@@ -1,46 +1,25 @@
 const express = require('express');
+const dotenv = require('dotenv').config();
+const { errorHandler } = require('./middleware/errorMiddleware');
 const cors = require('cors');
+const { main, pageNotFound } = require('./controllers/appController');
 const app = express();
 const port = process.env.PORT || 4041;
 
-const songs = [
-  {
-    "id": 1,
-    "song": 'tes',
-  },
-  {
-    "id": 2,
-    "song": 'tes2',
-  },
-];
-
-// app.use(
-//   cors({
-//     origin: '*',
-//   })
-// );
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*"); // update to match 
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+app.use((req, res, next) => {
+  cors({
+    origin: '*',
   });
-
-app.get('/', (_, res) => {
-  res.send('Our Songs App');
+  next();
 });
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use('/songs', require('./routes/songRoutes'));
 
-app.get('/songs', (_, res) => {
-  res.json({ id: 1 });
-});
+app.get('/', main);
+app.get('*', pageNotFound);
 
-app.get('/songs:id', (req, res) => {
-  res.json(songs[+req.params.id.split(':')[1]-1]);
-});
-
-app.delete('/songs:id', (_, res) => {
-  res.json({ id: 1, delete: 'deleted' });
-});
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`server is running on port:${port}`);
