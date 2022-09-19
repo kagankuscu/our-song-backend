@@ -3,15 +3,18 @@ const dotenv = require('dotenv').config();
 const { errorHandler } = require('./middleware/errorMiddleware');
 const cors = require('cors');
 const { main, pageNotFound } = require('./controllers/appController');
+const connectDB = require('./config/db');
 const app = express();
 const port = process.env.PORT || 4041;
 
-app.use((req, res, next) => {
+connectDB();
+
+app.use(
   cors({
     origin: '*',
-  });
-  next();
-});
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use('/songs', require('./routes/songRoutes'));

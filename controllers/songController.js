@@ -1,9 +1,10 @@
-const songs = require('../data');
+const Song = require('../models/songModel');
 
 // @desc Get Songs
 // @route GET /songs
 // @access Private
-const getSongs = (req, res) => {
+const getSongs = async (req, res) => {
+  const songs = await Song.find();
   res
     .status(200)
     .json({ status: res.statusCode, result: songs, length: songs.length });
@@ -12,46 +13,51 @@ const getSongs = (req, res) => {
 // @desc Get Song
 // @route GET /songs/songId/:id
 // @access Private
-const getSongById = (req, res) => {
-  res
-    .status(200)
-    .json({ status: res.statusCode, result: songs[req.params.id - 1] });
+const getSongById = async (req, res) => {
+  try {
+    const song = await Song.findById(req.params.id);
+    console.log(song);
+
+    if (!song) {
+      res.status(400);
+    }
+    res.status(200).json({ status: res.statusCode, result: song });
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
 };
 
 // @desc Get Songs By Singer Name
 // @route GET /songs/singerName/:name
 // @access Private
-const getSongsBySingerName = (req, res) => {
+const getSongsBySingerName = async (req, res) => {
   const paramsSingerName = req.params.name.toLowerCase();
-  const filter = songs.filter(
-    (song) => song.Singer.toLowerCase() === paramsSingerName
-  );
+  const mongoDBRegex = new RegExp(paramsSingerName, 'i');
+  const filter = await Song.find({ Singer: { $regex: mongoDBRegex } });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
 };
 
-// @desc Get Songs By Singer Name
-// @route GET /songs/singerName/:name
+// @desc Get Songs By Song Name
+// @route GET /songs/songName/:name
 // @access Private
-const getSongByName = (req, res) => {
+const getSongByName = async (req, res) => {
   const paramsSongName = req.params.name.toLowerCase();
-  const filter = songs.filter(
-    (song) => song.SongName.toLowerCase() === paramsSongName
-  );
+  const mongoDBRegex = new RegExp(paramsSongName, 'i');
+  const filter = await Song.find({ SongName: { $regex: mongoDBRegex } });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
 };
 
-// @desc Get Songs By Singer Name
-// @route GET /songs/singerName/:name
+// @desc Get Songs By WhoLike Name
+// @route GET /songs/whoLike/:name
 // @access Private
-const getSongsByWhoLike = (req, res) => {
+const getSongsByWhoLike = async (req, res) => {
   const paramsNameWhoLike = req.params.name.toLowerCase();
-  const filter = songs.filter(
-    (song) => song.WhoLike.toLowerCase() === paramsNameWhoLike
-  );
+  const mongoDBRegex = new RegExp(paramsNameWhoLike, 'i');
+  const filter = await Song.find({ WhoLike: { $regex: mongoDBRegex } });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -60,30 +66,41 @@ const getSongsByWhoLike = (req, res) => {
 // @desc Create New Song
 // @route POST /songs
 // @access Private
-const createNewSong = (req, res) => {
-  const newSong = req.body;
-  if (!newSong.Singer) {
-    res.status(400);
-    throw new Error('Please add a new song field.');
+const createNewSong = async (req, res) => {
+  try {
+    const newSong = req.body;
+    if (!newSong.Singer) {
+      res.status(400);
+      throw new Error('Please add a new song field.');
+    }
+    const song = await Song.create({
+      Singer: newSong.Singer,
+      SongName: newSong.SongName,
+      Url: newSong.Url,
+      WhoLike: newSong.WhoLike,
+    });
+
+    res
+      .status(201)
+      .json({ status: res.statusCode, result: song, length: newSong.length });
+  } catch (error) {
+    res.status(500).json({ message: error });
   }
-  songs.push(newSong);
-  res
-    .status(201)
-    .json({ status: res.statusCode, result: newSong, length: newSong.length });
 };
 
 // @desc Delete song by id
-// @route DELETE /songs/songId:id
+// @route DELETE /songs/songId/:id
 // @access Private
-const deleteSongById = (req, res) => {
-  const item = songs[req.params.id - 1];
-  const index = songs.indexOf(item);
-  if (index > -1) {
-    songs.splice(index, 1);
+const deleteSongById = async (req, res) => {
+  try {
+    const song = await Song.findById(req.params.id);
+    await song.remove()
+    res
+      .status(200)
+      .json({ status: res.statusCode, result: req.params.id});
+  } catch (error) {
+    res.status(500).json({ message: error });
   }
-  res
-    .status(200)
-    .json({ status: res.statusCode, result: item, length: item.length });
 };
 
 module.exports = {
