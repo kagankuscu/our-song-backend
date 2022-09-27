@@ -16,7 +16,6 @@ const getSongs = async (req, res) => {
 const getSongById = async (req, res) => {
   try {
     const song = await Song.findById(req.params.id);
-    console.log(song);
 
     if (!song) {
       res.status(400);
@@ -96,13 +95,11 @@ const uptadeSongById = async (req, res) => {
     const song = await Song.findById(req.params.id);
     const updatedSong = await song.updateOne(req.body);
 
-    res
-      .status(200)
-      .json({
-        status: res.statusCode,
-        result: updatedSong,
-        lenght: updatedSong.lenght,
-      });
+    res.status(200).json({
+      status: res.statusCode,
+      result: updatedSong,
+      lenght: updatedSong.lenght,
+    });
   } catch (error) {
     res.status(500).json({ message: error });
   }
