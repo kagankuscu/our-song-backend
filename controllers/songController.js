@@ -5,9 +5,11 @@ const Song = require('../models/songModel');
 // @access Private
 const getSongs = async (req, res) => {
   const songs = await Song.find();
-  res
-    .status(200)
-    .json({ status: res.statusCode, result: songs, length: songs.length });
+  res.status(200).json({
+    status: res.statusCode,
+    result: songs.reverse(),
+    length: songs.length,
+  });
 };
 
 // @desc Get Song
@@ -32,7 +34,9 @@ const getSongById = async (req, res) => {
 const getSongsBySingerName = async (req, res) => {
   const paramsSingerName = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsSingerName, 'i');
-  const filter = await Song.find({ Singer: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ Singer: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -44,7 +48,9 @@ const getSongsBySingerName = async (req, res) => {
 const getSongByName = async (req, res) => {
   const paramsSongName = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsSongName, 'i');
-  const filter = await Song.find({ SongName: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ SongName: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -56,7 +62,9 @@ const getSongByName = async (req, res) => {
 const getSongsByWhoLike = async (req, res) => {
   const paramsNameWhoLike = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsNameWhoLike, 'i');
-  const filter = await Song.find({ WhoLike: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ WhoLike: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
