@@ -1,10 +1,17 @@
 const Song = require('../models/songModel');
 
 // @desc Get Songs
-// @route GET /songs
+// @route GET /songs?sort=(Singer | SongName)&sort=(1 | -1)
 // @access Private
 const getSongs = async (req, res) => {
-  const songs = await Song.find();
+  let songs;
+  if (!req.query.sort) {
+    songs = await Song.find();
+  } else {
+    songs = await Song.find().sort({
+      [req.query.sort[0]]: req.query.sort[1],
+    });
+  }
   res.status(200).json({
     status: res.statusCode,
     result: songs.reverse(),
