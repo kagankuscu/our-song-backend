@@ -7,6 +7,7 @@ const getSongs = async (req, res) => {
   let songs;
   if (!req.query.sort) {
     songs = await Song.find();
+    songs.reverse();
   } else {
     songs = await Song.find().sort({
       [req.query.sort[0]]: req.query.sort[1],
@@ -14,7 +15,7 @@ const getSongs = async (req, res) => {
   }
   res.status(200).json({
     status: res.statusCode,
-    result: songs.reverse(),
+    result: songs,
     length: songs.length,
   });
 };
