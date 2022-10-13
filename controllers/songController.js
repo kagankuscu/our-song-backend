@@ -1,7 +1,8 @@
 const Song = require('../models/songModel');
+const paginate = require('jw-paginate');
 
 // @desc Get Songs
-// @route GET /songs?sort=(Singer | SongName)&sort=(1 | -1)
+// @route GET /songs?page=1&sort=(Singer | SongName)&sort=(1 | -1)&pageSize=&pageDisplay=
 // @access Private
 const getSongs = async (req, res) => {
   let songs;
@@ -13,9 +14,23 @@ const getSongs = async (req, res) => {
       [req.query.sort[0]]: req.query.sort[1],
     });
   }
+
+  // get page from query params or default to first page
+  const page = req.query.page || 1;
+
+  // get pager object for specified page
+  const pageSize = req.query.pageSize || 10;
+  // get pager object for number to display
+  const pageDisplay = req.query.pageDisplay || 10;
+
+  const pager = paginate(songs.length, page, pageSize, pageDisplay);
+
+  // get page of items from items array
+  const pageOfItems = songs.slice(pager.startIndex, pager.endIndex + 1);
+
   res.status(200).json({
     status: res.statusCode,
-    result: songs,
+    result: { pager, pageOfItems },
     length: songs.length,
   });
 };
