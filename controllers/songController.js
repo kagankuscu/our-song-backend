@@ -16,12 +16,12 @@ const getSongs = async (req, res) => {
   }
 
   // get page from query params or default to first page
-  const page = req.query.page || 1;
+  const page = parseInt(req.query.page) || 1;
 
   // get pager object for specified page
-  const pageSize = req.query.pageSize || 10;
+  const pageSize = parseInt(req.query.pageSize) || 10;
   // get pager object for number to display
-  const pageDisplay = req.query.pageDisplay || 10;
+  const pageDisplay = parseInt(req.query.pageDisplay) || 10;
 
   const pager = paginate(songs.length, page, pageSize, pageDisplay);
 
