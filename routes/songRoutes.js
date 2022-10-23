@@ -8,6 +8,7 @@ const {
   uptadeSongById,
   getSongByName,
   getSongsByWhoLike,
+  getRandomSong,
 } = require('../controllers/songController');
 const {
   singerNameCapitalize,
@@ -23,6 +24,7 @@ router
     [parseYoutubeVideoUrl, singerNameCapitalize, songNameCapitalize],
     createNewSong
   );
+router.route('/random').get(getRandomSong);
 router
   .route('/songId/:id')
   .get(getSongById)

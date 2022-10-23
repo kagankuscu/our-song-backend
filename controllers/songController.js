@@ -1,5 +1,6 @@
 const Song = require('../models/songModel');
 const paginate = require('jw-paginate');
+const { randomNumber } = require('../utils/utils');
 
 // @desc Get Songs
 // @route GET /songs?page=1&sort=(Singer | SongName)&sort=(1 | -1)&pageSize=&pageDisplay=
@@ -33,6 +34,15 @@ const getSongs = async (req, res) => {
     result: { pager, pageOfItems },
     length: songs.length,
   });
+};
+
+// @desc Get Random Song
+// @route GET /songs/random
+// @access Private
+const getRandomSong = async (req, res) => {
+  const songs = await Song.find();
+  const song = songs[randomNumber(songs.length)];
+  res.json({ status: res.statusCode, result: song, length: song.lenght });
 };
 
 // @desc Get Song
@@ -151,6 +161,7 @@ const deleteSongById = async (req, res) => {
 
 module.exports = {
   getSongs,
+  getRandomSong,
   getSongById,
   getSongsBySingerName,
   getSongByName,
