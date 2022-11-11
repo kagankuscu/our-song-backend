@@ -1,13 +1,48 @@
 const Song = require('../models/songModel');
+const paginate = require('jw-paginate');
+const { randomNumber } = require('../utils/utils');
 
 // @desc Get Songs
-// @route GET /songs
+// @route GET /songs?page=1&sort=(Singer | SongName)&sort=(1 | -1)&pageSize=&pageDisplay=
 // @access Private
 const getSongs = async (req, res) => {
+  let songs;
+  if (!req.query.sort) {
+    songs = await Song.find();
+    songs.reverse();
+  } else {
+    songs = await Song.find().sort({
+      [req.query.sort[0]]: req.query.sort[1],
+    });
+  }
+
+  // get page from query params or default to first page
+  const page = parseInt(req.query.page) || 1;
+
+  // get pager object for specified page
+  const pageSize = parseInt(req.query.pageSize) || 10;
+  // get pager object for number to display
+  const pageDisplay = parseInt(req.query.pageDisplay) || 10;
+
+  const pager = paginate(songs.length, page, pageSize, pageDisplay);
+
+  // get page of items from items array
+  const pageOfItems = songs.slice(pager.startIndex, pager.endIndex + 1);
+
+  res.status(200).json({
+    status: res.statusCode,
+    result: { pager, pageOfItems },
+    length: songs.length,
+  });
+};
+
+// @desc Get Random Song
+// @route GET /songs/random
+// @access Private
+const getRandomSong = async (req, res) => {
   const songs = await Song.find();
-  res
-    .status(200)
-    .json({ status: res.statusCode, result: songs, length: songs.length });
+  const song = songs[randomNumber(songs.length)];
+  res.json({ status: res.statusCode, result: song, length: song.lenght });
 };
 
 // @desc Get Song
@@ -32,7 +67,9 @@ const getSongById = async (req, res) => {
 const getSongsBySingerName = async (req, res) => {
   const paramsSingerName = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsSingerName, 'i');
-  const filter = await Song.find({ Singer: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ Singer: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -44,7 +81,9 @@ const getSongsBySingerName = async (req, res) => {
 const getSongByName = async (req, res) => {
   const paramsSongName = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsSongName, 'i');
-  const filter = await Song.find({ SongName: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ SongName: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -56,7 +95,9 @@ const getSongByName = async (req, res) => {
 const getSongsByWhoLike = async (req, res) => {
   const paramsNameWhoLike = req.params.name.toLowerCase();
   const mongoDBRegex = new RegExp(paramsNameWhoLike, 'i');
-  const filter = await Song.find({ WhoLike: { $regex: mongoDBRegex } });
+  const filter = await Song.find({ WhoLike: { $regex: mongoDBRegex } }).sort({
+    SongName: 1,
+  });
   res
     .status(200)
     .json({ status: res.statusCode, result: filter, length: filter.length });
@@ -120,6 +161,7 @@ const deleteSongById = async (req, res) => {
 
 module.exports = {
   getSongs,
+  getRandomSong,
   getSongById,
   getSongsBySingerName,
   getSongByName,
